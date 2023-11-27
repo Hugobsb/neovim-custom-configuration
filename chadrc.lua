@@ -127,6 +127,40 @@ M.ui = {
     end
   },
 
+  tabufline = {
+    overriden_modules = function(modules)
+      local function stbufnr()
+        return vim.api.nvim_win_get_buf(vim.g.statusline_winid)
+      end
+
+      local function put_lsp_diagnostic_in_title()
+        local buffers = {}
+
+        local has_errors = #vim.diagnostic.get(stbufnr(), { severity = vim.diagnostic.severity.ERROR }) > 0
+        local has_warnings = #vim.diagnostic.get(stbufnr(), { severity = vim.diagnostic.severity.WARN }) > 0
+
+        for _, buf in ipairs(vim.g.visibuffers) do
+          local name = string.match(buf, '%S+%.%S+')
+
+          if (has_errors) then
+            buf = string.gsub(buf, name, " " .. name)
+          end
+
+          if (has_warnings) then
+            buf = string.gsub(buf, name, " " .. name)
+          end
+
+          table.insert(buffers, buf)
+        end
+
+        return table.concat(buffers) .. "%#TblineFill#" .. "%="
+      end
+
+      table.remove(modules, 2)
+      table.insert(modules, 2, put_lsp_diagnostic_in_title())
+    end,
+  },
+
   cmp = {
     style = "atom_colored"
   },
